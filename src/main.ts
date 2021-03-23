@@ -1,16 +1,25 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import request from 'request'
+
+const TARGET_URL = 'https://notify-api.line.me/api/notify'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
+    const token: string = core.getInput('token')
+    request.post(
+      TARGET_URL,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        form: {
+          message: `Action run by ${process.env.GITHUB_ACTOR}`
+        }
+      },
+      (error, resposne, body) => {
+        core.debug(body)
+      }
+    )
   } catch (error) {
     core.setFailed(error.message)
   }

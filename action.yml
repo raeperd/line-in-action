@@ -1,11 +1,10 @@
-name: 'Your name here'
-description: 'Provide a description here'
+name: 'LINE-in-action'
+description: 'LINE notification for action'
 author: 'Your name or organization here'
 inputs:
-  milliseconds: # change this
+  token:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'Pass your LINE-notify token here'
 runs:
   using: 'node12'
   main: 'dist/index.js'
