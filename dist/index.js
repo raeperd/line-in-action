@@ -43,7 +43,8 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const notification = {
             token: core.getInput('token'),
-            message: `Action run by ${process.env.GITHUB_ACTOR}`
+            message: `Action run by ${process.env.GITHUB_ACTOR}`,
+            notificationDisabled: core.getInput('notificationDisabled') == 'true'
         };
         try {
             const response = yield service.sendNotification(notification);
@@ -75,14 +76,17 @@ class NotificationService {
         this.client = new HttpClient_1.HttpClient('agent');
     }
     sendNotification(notification) {
-        const header = {
+        const header = this.headersFromNotificationDTO(notification);
+        return this.client
+            .post(NOTIFY_SERVICE_URL, querystring_1.stringify(notification), header)
+            .then(response => response.readBody())
+            .then(responseBody => JSON.parse(responseBody));
+    }
+    headersFromNotificationDTO(notification) {
+        return {
             Authorization: `Bearer ${notification.token}`,
             'Content-Type': 'application/x-www-form-urlencoded'
         };
-        return this.client
-            .post(NOTIFY_SERVICE_URL, querystring_1.stringify({ message: notification.message }), header)
-            .then(response => response.readBody())
-            .then(responseBody => JSON.parse(responseBody));
     }
 }
 exports.NotificationService = NotificationService;

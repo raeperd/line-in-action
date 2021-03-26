@@ -4,7 +4,13 @@ author: 'Your name or organization here'
 inputs:
   token:
     required: true
-    description: 'Pass your LINE-notify token here'
+    description: An access token for authentication. Used for calling the notification API
+  notificationDisabled:
+    required: false
+    description: If true, user doesn't receive a push notification when the message is sent.
+                 If false, The user receives a push notification when the message is sent.
+                 If omitted, the value defaults to false.
+    default: 'true'
 runs:
   using: 'node12'
   main: 'dist/index.js'
