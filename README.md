@@ -4,23 +4,19 @@
 
 Github action for pushing LINE message using [LINE-Notify](https://notify-bot.line.me/en/)
 
-
-
 ## Usage
 
-``` yaml
+```yaml
 runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: raeperd/line-in-action@v0.1-beta
         with:
           token: ${{ secrets.LINE_NOTIFY_TOKEN }}
-          message: Message to send # Default: Action run by env.GITHUB_ACTOR
+          message: Message to send # Default: Action run by $GITHUB_ACTOR
 ```
 
 - You can see default environment variables you can use in [GitHub Docs](https://docs.github.com/en/actions/reference/environment-variables#default-environment-variables)
-
-
 
 # Reference
 
