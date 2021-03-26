@@ -6,7 +6,8 @@ const service = new NotificationService()
 async function run(): Promise<void> {
   const notification: NotificationDTO = {
     token: core.getInput('token'),
-    message: `Action run by ${process.env.GITHUB_ACTOR}`
+    message: `Action run by ${process.env.GITHUB_ACTOR}`,
+    notificationDisabled: core.getInput('notificationDisabled') == 'true'
   }
   try {
     const response = await service.sendNotification(notification)
