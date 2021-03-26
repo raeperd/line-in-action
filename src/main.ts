@@ -1,25 +1,19 @@
 import * as core from '@actions/core'
-import request from 'request'
+import {NotificationDTO, NotificationService} from './service/line_notification_service'
 
-const TARGET_URL = 'https://notify-api.line.me/api/notify'
+const service = new NotificationService()
 
 async function run(): Promise<void> {
+  const notification: NotificationDTO = {
+    token: core.getInput('token'),
+    message: `Action run by ${process.env.GITHUB_ACTOR}`,
+    notificationDisabled: core.getInput('notificationDisabled') == 'true'
+  }
   try {
-    const token: string = core.getInput('token')
-    request.post(
-      TARGET_URL,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        form: {
-          message: `Action run by ${process.env.GITHUB_ACTOR}`
-        }
-      },
-      (error, resposne, body) => {
-        core.debug(body)
-      }
-    )
+    const response = await service.sendNotification(notification)
+    if (response.status != 200) {
+      core.setFailed(`${response.message} with ${notification.token}`)
+    }
   } catch (error) {
     core.setFailed(error.message)
   }
