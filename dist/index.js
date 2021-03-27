@@ -27,65 +27,30 @@ exports.GitHubActionInputParser = GitHubActionInputParser;
 
 /***/ }),
 
-/***/ 109:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+/***/ 700:
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core = __importStar(__webpack_require__(186));
-const github_action_input_parser_1 = __webpack_require__(673);
-const line_notification_service_1 = __webpack_require__(173);
-const parser = new github_action_input_parser_1.GitHubActionInputParser();
-const service = new line_notification_service_1.NotificationService();
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const notification = parser.parseInput();
-        try {
-            const response = yield service.sendNotification(notification);
-            if (response.status != 200) {
-                core.setFailed(`${response.message} with ${notification.token}`);
-            }
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
+exports.LINEMessage = void 0;
+class LINEMessage {
+    constructor(value) {
+        this.contents = value;
+    }
+    getToken() {
+        return this.contents.token;
+    }
+    toURLSearchParams() {
+        return new URLSearchParams(this.contents);
+    }
 }
-run();
+exports.LINEMessage = LINEMessage;
 
 
 /***/ }),
 
-/***/ 173:
+/***/ 401:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -94,26 +59,59 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.NotificationService = void 0;
-const querystring_1 = __webpack_require__(191);
+exports.LINENotifyService = void 0;
 const node_fetch_1 = __importDefault(__webpack_require__(467));
-class NotificationService {
-    sendNotification(notification) {
-        const header = this.headersFromNotificationDTO(notification);
+class LINENotifyService {
+    sendNotification(message) {
+        const header = this.headerFromMessage(message);
         return node_fetch_1.default('https://notify-api.line.me/api/notify', {
             headers: header,
             method: 'POST',
-            body: querystring_1.stringify(notification)
+            body: message.toURLSearchParams()
         }).then(response => response.json());
     }
-    headersFromNotificationDTO(notification) {
+    headerFromMessage(message) {
         return {
-            Authorization: `Bearer ${notification.token}`,
+            Authorization: `Bearer ${message.getToken()}`,
             'Content-Type': 'application/x-www-form-urlencoded'
         };
     }
 }
-exports.NotificationService = NotificationService;
+exports.LINENotifyService = LINENotifyService;
+
+
+/***/ }),
+
+/***/ 109:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core_1 = __webpack_require__(186);
+const github_action_input_parser_1 = __webpack_require__(673);
+const line_message_1 = __webpack_require__(700);
+const line_notify_service_1 = __webpack_require__(401);
+const parser = new github_action_input_parser_1.GitHubActionInputParser();
+const service = new line_notify_service_1.LINENotifyService();
+function run() {
+    const githubActionInput = parser.parseInput();
+    const messageVO = {
+        token: githubActionInput.token,
+        message: githubActionInput.message,
+        notificationDisabled: githubActionInput.notificationDisabled ? 'true' : 'false'
+    };
+    const message = new line_message_1.LINEMessage(messageVO);
+    service
+        .sendNotification(message)
+        .then(response => {
+        if (response.status != 200) {
+            core_1.setFailed(`${response.message} with ${response.status}`);
+        }
+    })
+        .catch(error => core_1.setFailed(error));
+}
+run();
 
 
 /***/ }),
@@ -2213,14 +2211,6 @@ module.exports = require("os");;
 
 "use strict";
 module.exports = require("path");;
-
-/***/ }),
-
-/***/ 191:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("querystring");;
 
 /***/ }),
 
