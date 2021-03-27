@@ -2,6 +2,31 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 673:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GitHubActionInputParser = void 0;
+const core_1 = __webpack_require__(186);
+const TOKEN = 'token';
+const MESSAGE = 'message';
+const NOTIFICATION_DISABLED = 'notificationDisabled';
+class GitHubActionInputParser {
+    parseInput() {
+        return {
+            token: core_1.getInput(TOKEN),
+            message: core_1.getInput(MESSAGE),
+            notificationDisabled: core_1.getInput(NOTIFICATION_DISABLED).toLowerCase() === 'true'
+        };
+    }
+}
+exports.GitHubActionInputParser = GitHubActionInputParser;
+
+
+/***/ }),
+
 /***/ 109:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -37,15 +62,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(186));
+const github_action_input_parser_1 = __webpack_require__(673);
 const line_notification_service_1 = __webpack_require__(173);
+const parser = new github_action_input_parser_1.GitHubActionInputParser();
 const service = new line_notification_service_1.NotificationService();
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        const notification = {
-            token: core.getInput('token'),
-            message: `Action run by ${process.env.GITHUB_ACTOR}`,
-            notificationDisabled: core.getInput('notificationDisabled') == 'true'
-        };
+        const notification = parser.parseInput();
         try {
             const response = yield service.sendNotification(notification);
             if (response.status != 200) {
