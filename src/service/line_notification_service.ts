@@ -1,23 +1,17 @@
-import {HttpClient} from 'typed-rest-client/HttpClient'
-import {IHeaders} from 'typed-rest-client/Interfaces'
 import {stringify} from 'querystring'
+import fetch from 'node-fetch'
 
 export class NotificationService {
-  client: HttpClient
-
-  constructor() {
-    this.client = new HttpClient('agent')
-  }
-
   public sendNotification(notification: NotificationDTO): Promise<NotificationResultDTO> {
     const header = this.headersFromNotificationDTO(notification)
-    return this.client
-      .post(NOTIFY_SERVICE_URL, stringify(notification as LineNotifictaionDTO), header)
-      .then(response => response.readBody())
-      .then(responseBody => JSON.parse(responseBody) as NotificationResultDTO)
+    return fetch('https://notify-api.line.me/api/notify', {
+      headers: header,
+      method: 'POST',
+      body: stringify(notification as LineNotifictaionDTO)
+    }).then(response => (response.json() as unknown) as NotificationResultDTO)
   }
 
-  private headersFromNotificationDTO(notification: NotificationDTO): IHeaders {
+  private headersFromNotificationDTO(notification: NotificationDTO) {
     return {
       Authorization: `Bearer ${notification.token}`,
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -36,5 +30,3 @@ type LineNotifictaionDTO = {
   message: string
   notificationDisabled: boolean
 }
-
-const NOTIFY_SERVICE_URL = 'https://notify-api.line.me/api/notify'
