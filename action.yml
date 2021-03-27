@@ -1,6 +1,6 @@
 name: 'LINE-in-action'
-description: 'LINE notification for action'
-author: 'Your name or organization here'
+description: 'Github action for pushing LINE message using LINE-Notify'
+author: 'raeperd'
 inputs:
   token:
     required: true
@@ -10,7 +10,7 @@ inputs:
     description: If true, user doesn't receive a push notification when the message is sent.
                  If false, The user receives a push notification when the message is sent.
                  If omitted, the value defaults to false.
-    default: 'true'
+    default: 'false'
 runs:
   using: 'node12'
   main: 'dist/index.js'
