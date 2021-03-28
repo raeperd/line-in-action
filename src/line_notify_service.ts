@@ -1,22 +1,25 @@
 import fetch from 'node-fetch'
 
-import {LINEMessage} from './line_message'
+import {GitHubActionInputDTO} from './github_action_input_parser'
 
 export class LINENotifyService {
-  public sendNotification(message: LINEMessage): Promise<ResultDTO> {
-    const header = this.headerFromMessage(message)
+  public sendNotification(message: GitHubActionInputDTO): Promise<ResultDTO> {
     return fetch('https://notify-api.line.me/api/notify', {
-      headers: header,
+      headers: {
+        Authorization: `Bearer ${message.token}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
       method: 'POST',
-      body: message.toURLSearchParams()
+      body: this.queryStringWithOutToken(message)
     }).then(response => (response.json() as unknown) as ResultDTO)
   }
 
-  private headerFromMessage(message: LINEMessage) {
-    return {
-      Authorization: `Bearer ${message.getToken()}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
-    }
+  private queryStringWithOutToken(message: GitHubActionInputDTO): string {
+    const messageAsRecord = message as Record<string, string | boolean>
+    return Object.keys(messageAsRecord)
+      .filter(key => key !== 'token')
+      .map(key => `${key}=${messageAsRecord[key]}`)
+      .join('&')
   }
 }
 

@@ -1,7 +1,7 @@
 import {when} from 'jest-when'
 import {getInput} from '@actions/core'
 
-import {GitHubActionInputDTO, GitHubActionInputParser} from '../src/github_action_input_parser'
+import {GitHubActionInputDTO, parseGitHubActionInput} from '../src/github_action_input_parser'
 
 jest.mock('@actions/core')
 const mockedGetInput = mockFunction(getInput)
@@ -10,12 +10,10 @@ export function mockFunction<T extends (...args: any[]) => any>(fn: T): jest.Moc
   return fn as jest.MockedFunction<T>
 }
 
-const parser = new GitHubActionInputParser()
-
 test('when parseInput expect getInput called with input arguments', () => {
   mockedGetInput.mockReturnValue('')
 
-  parser.parseInput()
+  parseGitHubActionInput()
 
   expect(mockedGetInput).toHaveBeenCalledWith('token')
   expect(mockedGetInput).toHaveBeenCalledWith('message')
@@ -34,5 +32,5 @@ test('when parseInput expect GitHubActionInputDTO', () => {
     .mockReturnValueOnce(mockedDTO.message)
     .mockReturnValueOnce('true')
 
-  expect(parser.parseInput()).toMatchObject(mockedDTO)
+  return parseGitHubActionInput().then(data => expect(data).toMatchObject(mockedDTO))
 })

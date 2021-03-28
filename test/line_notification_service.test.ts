@@ -1,14 +1,13 @@
-import {LINEMessage, LINEMessageVO} from '../src/line_message'
+import {GitHubActionInputDTO} from '../src/github_action_input_parser'
 import {LINENotifyService} from '../src/line_notify_service'
 
 const service = new LINENotifyService()
 
 test('when send with invalid token expect failed', async () => {
-  const messageVO: LINEMessageVO = {
+  const message: GitHubActionInputDTO = {
     token: 'invalid token',
     message: 'some message',
-    notificationDisabled: 'true'
+    notificationDisabled: false
   }
-  const message = new LINEMessage(messageVO)
   expect((await service.sendNotification(message)).status).not.toBe(200)
 })

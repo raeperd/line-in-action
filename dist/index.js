@@ -8,44 +8,21 @@ require('./sourcemap-register.js');module.exports =
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GitHubActionInputParser = void 0;
+exports.parseGitHubActionInput = void 0;
 const core_1 = __webpack_require__(186);
 const TOKEN = 'token';
 const MESSAGE = 'message';
 const NOTIFICATION_DISABLED = 'notificationDisabled';
-class GitHubActionInputParser {
-    parseInput() {
-        return {
+function parseGitHubActionInput() {
+    return new Promise(resolve => {
+        resolve({
             token: core_1.getInput(TOKEN),
             message: core_1.getInput(MESSAGE),
             notificationDisabled: core_1.getInput(NOTIFICATION_DISABLED).toLowerCase() === 'true'
-        };
-    }
+        });
+    });
 }
-exports.GitHubActionInputParser = GitHubActionInputParser;
-
-
-/***/ }),
-
-/***/ 700:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.LINEMessage = void 0;
-class LINEMessage {
-    constructor(value) {
-        this.contents = value;
-    }
-    getToken() {
-        return this.contents.token;
-    }
-    toURLSearchParams() {
-        return new URLSearchParams(this.contents);
-    }
-}
-exports.LINEMessage = LINEMessage;
+exports.parseGitHubActionInput = parseGitHubActionInput;
 
 
 /***/ }),
@@ -63,18 +40,21 @@ exports.LINENotifyService = void 0;
 const node_fetch_1 = __importDefault(__webpack_require__(467));
 class LINENotifyService {
     sendNotification(message) {
-        const header = this.headerFromMessage(message);
         return node_fetch_1.default('https://notify-api.line.me/api/notify', {
-            headers: header,
+            headers: {
+                Authorization: `Bearer ${message.token}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
             method: 'POST',
-            body: message.toURLSearchParams()
+            body: this.queryStringWithOutToken(message)
         }).then(response => response.json());
     }
-    headerFromMessage(message) {
-        return {
-            Authorization: `Bearer ${message.getToken()}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        };
+    queryStringWithOutToken(message) {
+        const messageAsRecord = message;
+        return Object.keys(messageAsRecord)
+            .filter(key => key !== 'token')
+            .map(key => `${key}=${messageAsRecord[key]}`)
+            .join('&');
     }
 }
 exports.LINENotifyService = LINENotifyService;
@@ -90,23 +70,14 @@ exports.LINENotifyService = LINENotifyService;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core_1 = __webpack_require__(186);
 const github_action_input_parser_1 = __webpack_require__(673);
-const line_message_1 = __webpack_require__(700);
 const line_notify_service_1 = __webpack_require__(401);
-const parser = new github_action_input_parser_1.GitHubActionInputParser();
 const service = new line_notify_service_1.LINENotifyService();
 function run() {
-    const githubActionInput = parser.parseInput();
-    const messageVO = {
-        token: githubActionInput.token,
-        message: githubActionInput.message,
-        notificationDisabled: githubActionInput.notificationDisabled ? 'true' : 'false'
-    };
-    const message = new line_message_1.LINEMessage(messageVO);
-    service
-        .sendNotification(message)
+    github_action_input_parser_1.parseGitHubActionInput()
+        .then(actionInput => service.sendNotification(actionInput))
         .then(response => {
         if (response.status != 200) {
-            core_1.setFailed(`${response.message} with ${response.status}`);
+            core_1.setFailed(`Send Notification Failed ${response.message} with ${response.status}`);
         }
     })
         .catch(error => core_1.setFailed(error));
