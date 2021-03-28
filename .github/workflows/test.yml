@@ -18,6 +18,8 @@ jobs:
         with:
           token: ${{ secrets.LINE_NOTIFY_TOKEN }}
           message: Action run by ${{ github.actor }}
+          stickerPackageId: 1
+          stickerId: 2
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:

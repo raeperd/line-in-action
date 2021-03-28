@@ -3,26 +3,73 @@ require('./sourcemap-register.js');module.exports =
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 673:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseGitHubActionInput = void 0;
-const core_1 = __webpack_require__(186);
+const core = __importStar(__webpack_require__(186));
 const TOKEN = 'token';
 const MESSAGE = 'message';
 const NOTIFICATION_DISABLED = 'notificationDisabled';
+const STICKER_PACKAGE_ID = 'stickerPackageId';
+const STICKER_ID = 'stickerId';
 function parseGitHubActionInput() {
     return new Promise(resolve => {
         resolve({
-            token: core_1.getInput(TOKEN),
-            message: core_1.getInput(MESSAGE),
-            notificationDisabled: core_1.getInput(NOTIFICATION_DISABLED).toLowerCase() === 'true'
+            token: core.getInput(TOKEN),
+            message: core.getInput(MESSAGE),
+            notificationDisabled: getInputBooleanOrUndefined(NOTIFICATION_DISABLED),
+            stickerPackageId: getInputNumberOrUndefined(STICKER_PACKAGE_ID),
+            stickerId: getInputNumberOrUndefined(STICKER_ID)
         });
+    }).then(data => {
+        core.info(`Parsed input message: ${data.message}`);
+        core.info(`Parsed input notificationDisabled: ${data.notificationDisabled}`);
+        core.info(`Parsed input stickerPackageId: ${data.stickerPackageId}`);
+        core.info(`Parsed input stickerId: ${data.stickerId}`);
+        return data;
     });
 }
 exports.parseGitHubActionInput = parseGitHubActionInput;
+function getInputBooleanOrUndefined(key) {
+    const maybeBoolean = core.getInput(key).toLowerCase();
+    if (maybeBoolean === 'true' || maybeBoolean === 'false') {
+        return maybeBoolean === 'true';
+    }
+    else {
+        return undefined;
+    }
+}
+function getInputNumberOrUndefined(key) {
+    const maybeNumber = Number(core.getInput(key));
+    if (maybeNumber) {
+        return maybeNumber;
+    }
+    else {
+        return undefined;
+    }
+}
 
 
 /***/ }),
@@ -53,6 +100,7 @@ class LINENotifyService {
         const messageAsRecord = message;
         return Object.keys(messageAsRecord)
             .filter(key => key !== 'token')
+            .filter(key => messageAsRecord[key] !== undefined)
             .map(key => `${key}=${messageAsRecord[key]}`)
             .join('&');
     }
@@ -63,24 +111,43 @@ exports.LINENotifyService = LINENotifyService;
 /***/ }),
 
 /***/ 109:
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const core_1 = __webpack_require__(186);
+const core = __importStar(__webpack_require__(186));
 const github_action_input_parser_1 = __webpack_require__(673);
 const line_notify_service_1 = __webpack_require__(401);
 const service = new line_notify_service_1.LINENotifyService();
 function run() {
     github_action_input_parser_1.parseGitHubActionInput()
-        .then(actionInput => service.sendNotification(actionInput))
-        .then(response => {
+        .then(actionInput => service.sendNotification(actionInput).then(response => {
         if (response.status != 200) {
-            core_1.setFailed(`Send Notification Failed ${response.message} with ${response.status}`);
+            core.error(`Server response: ${response.status} with ${response.message}`);
+            core.setFailed(`Send Notification Failed.`);
         }
-    })
-        .catch(error => core_1.setFailed(error));
+    }))
+        .catch(error => core.setFailed(error));
 }
 run();
 

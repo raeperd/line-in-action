@@ -14,10 +14,11 @@ export class LINENotifyService {
     }).then(response => (response.json() as unknown) as ResultDTO)
   }
 
-  private queryStringWithOutToken(message: GitHubActionInputDTO): string {
-    const messageAsRecord = message as Record<string, string | boolean>
+  public queryStringWithOutToken(message: GitHubActionInputDTO): string {
+    const messageAsRecord = message as Record<string, string | boolean | number>
     return Object.keys(messageAsRecord)
       .filter(key => key !== 'token')
+      .filter(key => messageAsRecord[key] !== undefined)
       .map(key => `${key}=${messageAsRecord[key]}`)
       .join('&')
   }

@@ -11,3 +11,16 @@ test('when send with invalid token expect failed', async () => {
   }
   expect((await service.sendNotification(message)).status).not.toBe(200)
 })
+
+test('when queryStringWithoutToken expect stickerID valid', () => {
+  const message: GitHubActionInputDTO = {
+    token: 'TOKEN',
+    message: 'SOME_MESSAGE',
+    stickerPackageId: 100,
+    stickerId: 500
+  }
+
+  expect(service.queryStringWithOutToken(message)).toBe(
+    `message=${message.message}&stickerPackageId=${message.stickerPackageId}&stickerId=${message.stickerId}`
+  )
+})

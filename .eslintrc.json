@@ -17,7 +17,7 @@
     },
     "rules": {
       "@typescript-eslint/restrict-template-expressions": [
-        "error", { "allowBoolean": true }
+        "warn", { "allowBoolean": true }
       ]
     }
   }
