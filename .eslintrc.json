@@ -14,5 +14,10 @@
       "node": true,
       "es6": true,
       "jest/globals": true
+    },
+    "rules": {
+      "@typescript-eslint/restrict-template-expressions": [
+        "warn", { "allowBoolean": true }
+      ]
     }
   }

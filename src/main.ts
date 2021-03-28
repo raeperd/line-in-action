@@ -1,22 +1,20 @@
 import * as core from '@actions/core'
-import {NotificationDTO, NotificationService} from './service/line_notification_service'
+import {parseGitHubActionInput} from './github_action_input_parser'
+import {LINENotifyService} from './line_notify_service'
 
-const service = new NotificationService()
+const service = new LINENotifyService()
 
-async function run(): Promise<void> {
-  const notification: NotificationDTO = {
-    token: core.getInput('token'),
-    message: `Action run by ${process.env.GITHUB_ACTOR}`,
-    notificationDisabled: core.getInput('notificationDisabled') == 'true'
-  }
-  try {
-    const response = await service.sendNotification(notification)
-    if (response.status != 200) {
-      core.setFailed(`${response.message} with ${notification.token}`)
-    }
-  } catch (error) {
-    core.setFailed(error.message)
-  }
+function run() {
+  parseGitHubActionInput()
+    .then(actionInput =>
+      service.sendNotification(actionInput).then(response => {
+        if (response.status != 200) {
+          core.error(`Server response: ${response.status} with ${response.message}`)
+          core.setFailed(`Send Notification Failed.`)
+        }
+      })
+    )
+    .catch(error => core.setFailed(error))
 }
 
 run()

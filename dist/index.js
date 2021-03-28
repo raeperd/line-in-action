@@ -2,6 +2,114 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 673:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.parseGitHubActionInput = void 0;
+const core = __importStar(__webpack_require__(186));
+const TOKEN = 'token';
+const MESSAGE = 'message';
+const NOTIFICATION_DISABLED = 'notificationDisabled';
+const STICKER_PACKAGE_ID = 'stickerPackageId';
+const STICKER_ID = 'stickerId';
+function parseGitHubActionInput() {
+    return new Promise(resolve => {
+        resolve({
+            token: core.getInput(TOKEN),
+            message: core.getInput(MESSAGE),
+            notificationDisabled: getInputBooleanOrUndefined(NOTIFICATION_DISABLED),
+            stickerPackageId: getInputNumberOrUndefined(STICKER_PACKAGE_ID),
+            stickerId: getInputNumberOrUndefined(STICKER_ID)
+        });
+    }).then(data => {
+        core.info(`Parsed input message: ${data.message}`);
+        core.info(`Parsed input notificationDisabled: ${data.notificationDisabled}`);
+        core.info(`Parsed input stickerPackageId: ${data.stickerPackageId}`);
+        core.info(`Parsed input stickerId: ${data.stickerId}`);
+        return data;
+    });
+}
+exports.parseGitHubActionInput = parseGitHubActionInput;
+function getInputBooleanOrUndefined(key) {
+    const maybeBoolean = core.getInput(key).toLowerCase();
+    if (maybeBoolean === 'true' || maybeBoolean === 'false') {
+        return maybeBoolean === 'true';
+    }
+    else {
+        return undefined;
+    }
+}
+function getInputNumberOrUndefined(key) {
+    const maybeNumber = Number(core.getInput(key));
+    if (maybeNumber) {
+        return maybeNumber;
+    }
+    else {
+        return undefined;
+    }
+}
+
+
+/***/ }),
+
+/***/ 401:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LINENotifyService = void 0;
+const node_fetch_1 = __importDefault(__webpack_require__(467));
+class LINENotifyService {
+    sendNotification(message) {
+        return node_fetch_1.default('https://notify-api.line.me/api/notify', {
+            headers: {
+                Authorization: `Bearer ${message.token}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            method: 'POST',
+            body: this.queryStringWithOutToken(message)
+        }).then(response => response.json());
+    }
+    queryStringWithOutToken(message) {
+        const messageAsRecord = message;
+        return Object.keys(messageAsRecord)
+            .filter(key => key !== 'token')
+            .filter(key => messageAsRecord[key] !== undefined)
+            .map(key => `${key}=${messageAsRecord[key]}`)
+            .join('&');
+    }
+}
+exports.LINENotifyService = LINENotifyService;
+
+
+/***/ }),
+
 /***/ 109:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -26,71 +134,22 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(186));
-const line_notification_service_1 = __webpack_require__(173);
-const service = new line_notification_service_1.NotificationService();
+const github_action_input_parser_1 = __webpack_require__(673);
+const line_notify_service_1 = __webpack_require__(401);
+const service = new line_notify_service_1.LINENotifyService();
 function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const notification = {
-            token: core.getInput('token'),
-            message: `Action run by ${process.env.GITHUB_ACTOR}`,
-            notificationDisabled: core.getInput('notificationDisabled') == 'true'
-        };
-        try {
-            const response = yield service.sendNotification(notification);
-            if (response.status != 200) {
-                core.setFailed(`${response.message} with ${notification.token}`);
-            }
+    github_action_input_parser_1.parseGitHubActionInput()
+        .then(actionInput => service.sendNotification(actionInput).then(response => {
+        if (response.status != 200) {
+            core.error(`Server response: ${response.status} with ${response.message}`);
+            core.setFailed(`Send Notification Failed.`);
         }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
+    }))
+        .catch(error => core.setFailed(error));
 }
 run();
-
-
-/***/ }),
-
-/***/ 173:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.NotificationService = void 0;
-const querystring_1 = __webpack_require__(191);
-const node_fetch_1 = __importDefault(__webpack_require__(467));
-class NotificationService {
-    sendNotification(notification) {
-        const header = this.headersFromNotificationDTO(notification);
-        return node_fetch_1.default('https://notify-api.line.me/api/notify', {
-            headers: header,
-            method: 'POST',
-            body: querystring_1.stringify(notification)
-        }).then(response => response.json());
-    }
-    headersFromNotificationDTO(notification) {
-        return {
-            Authorization: `Bearer ${notification.token}`,
-            'Content-Type': 'application/x-www-form-urlencoded'
-        };
-    }
-}
-exports.NotificationService = NotificationService;
 
 
 /***/ }),
@@ -2190,14 +2249,6 @@ module.exports = require("os");;
 
 "use strict";
 module.exports = require("path");;
-
-/***/ }),
-
-/***/ 191:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("querystring");;
 
 /***/ }),
 
