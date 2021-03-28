@@ -86,14 +86,15 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.LINENotifyService = void 0;
 const node_fetch_1 = __importDefault(__webpack_require__(467));
 class LINENotifyService {
-    sendNotification(message) {
+    sendNotification(actionInput) {
+        actionInput.message += ` ${getActionURL()}`;
         return node_fetch_1.default('https://notify-api.line.me/api/notify', {
             headers: {
-                Authorization: `Bearer ${message.token}`,
+                Authorization: `Bearer ${actionInput.token}`,
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             method: 'POST',
-            body: this.queryStringWithOutToken(message)
+            body: this.queryStringWithOutToken(actionInput)
         }).then(response => response.json());
     }
     queryStringWithOutToken(message) {
@@ -106,6 +107,9 @@ class LINENotifyService {
     }
 }
 exports.LINENotifyService = LINENotifyService;
+function getActionURL() {
+    return `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+}
 
 
 /***/ }),
