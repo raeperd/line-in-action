@@ -1,6 +1,9 @@
 name: 'LINE-in-action'
 description: 'Github action for pushing LINE message using LINE-Notify'
 author: 'raeperd'
+branding:
+  icon: 'message-square'
+  color: 'green'
 inputs:
   token:
     required: true
