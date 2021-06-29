@@ -12,7 +12,7 @@ export class LINENotifyService {
       },
       method: 'POST',
       body: this.queryStringWithOutToken(actionInput)
-    }).then(response => (response.json() as unknown) as ResultDTO)
+    }).then(response => response.json() as unknown as ResultDTO)
   }
 
   public queryStringWithOutToken(message: GitHubActionInputDTO): string {
