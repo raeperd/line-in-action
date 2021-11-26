@@ -30,14 +30,14 @@
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.15",
+    "@types/jest": "^27.0.3",
     "@types/jest-when": "^2.7.2",
     "@types/node": "^16.10.2",
     "@typescript-eslint/parser": "^4.29.3",
     "@vercel/ncc": "^0.31.1",
     "eslint": "^7.32.0",
     "eslint-plugin-github": "^4.3.2",
-    "eslint-plugin-jest": "^24.3.6",
+    "eslint-plugin-jest": "^25.3.0",
     "jest": "^27.3.1",
     "jest-circus": "^26.6.3",
     "jest-when": "^3.2.1",
