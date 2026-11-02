@@ -1,5 +1,10 @@
 # LINE-in-action
 
+> [!WARNING]
+> **This project is deprecated and has been archived.**
+> LINE Notify ended its service on March 31, 2025 ([closing announcement](https://notify-bot.line.me/closing-announce), [LINE Developers notice](https://developers.line.biz/en/news/2025/04/01/line-notify/)), so this action no longer works.
+> If you need an alternative, use the [LINE Messaging API](https://developers.line.biz/en/docs/messaging-api/).
+
 [![build-and-test](https://github.com/raeperd/line-in-action/actions/workflows/test.yml/badge.svg)](https://github.com/raeperd/line-in-action/actions/workflows/test.yml)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=raeperd_line-in-action&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=raeperd_line-in-action)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=raeperd_line-in-action&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=raeperd_line-in-action)
